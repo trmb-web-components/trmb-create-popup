@@ -1,0 +1,365 @@
+<link rel="import" href="../@polymer/polymer/polymer-element.html">
+<link rel="import" href="../@polymer/polymer/lib/elements/dom-if.html">
+<link rel="import" href="../@polymer/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../@polymer/polymer/lib/utils/resolve-url.html">
+
+<link rel="import" href="../trmb-css/dist/components/form.css.min.html">
+<link rel="import" href="../trmb-css/dist/components/xy-grid.css.min.html">
+<dom-module id="trmb-create-popup">
+
+    <template>
+        <style include="form-css">
+            
+        </style>
+        <style include="xy-grid-css">
+            
+        </style>
+    <style>
+        .popup-container {
+            position: fixed;
+            /* Stay in place */
+            z-index: 1;
+            /* Sit on top */
+            padding-top: 100px;
+            /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black w/ opacity */
+        }
+        /* Modal Content */
+        
+        .callout {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 450px;
+        }
+        /* The Close Button */
+        
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .morelink {
+            margin: 0 0 1rem;
+        }
+        
+        [hidden] {
+            display: none !important;
+        }
+        .alert-box.warning {
+            background-color: #f08a24;
+            border-color: #de770f;
+            color: #FFFFFF;
+        }
+        .alert-box.success {
+            background-color: #43AC6A;
+            border-color: #3a945b;
+            color: #FFFFFF;
+        }
+    </style>
+    <template is="dom-if" if="{{showPopupBoolean}}" id="createpopup">
+   <div class="popup-container" id="createpopup-container">
+      <!--div class="popup-content" !-->
+      <div class="cell large-6 callout secondary"  id="createpopup-container">
+         <span class="close" on-click="_closeBox">&times;</span>
+         <h3>{{popupConfig.heading}}</h3>
+         <!--div class="popup-header">
+            <h2 class="popup-header-title"></h2>
+            <span class="close" on-click="_closeBox">&times;</span>
+            </div!-->
+         <div class="popup-body">
+            <template is="dom-if" if="{{!_isConfigReadyAsBool}}" id="ready-loading">
+               Loading..
+            </template>
+    <dom-if if="{{_isCreated}}">
+        <template>
+                 <span class="alert-box success">   {{popupConfig.message.success}} </span>
+                </template>
+    </dom-if>
+    <dom-if if="{{_isError}}">
+        <template>
+                 <span class="alert-box warning">   {{popupConfig.message.warning}}</span>
+                </template>
+    </dom-if>
+    <form name="create-profilex-form" id="create-popup-form">
+        <template is="dom-repeat" items="{{popupConfig.fields}}">
+                  <template is="dom-if" if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
+                     <div class="row">
+                        <div class="large-12 columns">
+                           <label>{{item.label}}: </label><input type="text" value="" name="{{item.name}}" required="{{item.required}}">
+                        </div>
+                     </div>
+                  </template>
+        <template is="dom-if" if="{{checkFieldType(item.type, 'radio', item.showFieldOn)}}">
+                     <div class="row">
+                        <div class="large-12 columns">
+                           <label>{{item.label}}: </label>
+                           <template is="dom-repeat" items="{{item.options}}" as="option">
+                              <input type="radio" name="{{item.name}}" value="{{option.value}}"> {{option.value}}
+                           </template>
+        </div>
+        </div>
+        </template>
+        <template is="dom-if" if="{{checkFieldType(item.type, 'date', item.showFieldOn)}}">
+                     <div class="row">
+                        <div class="large-12 columns">
+                           <label>{{item.label}}: </label><input type="date" value="" name="{{item.name}}">
+                        </div>
+                     </div>
+                  </template>
+        <template is="dom-if" if="{{checkFieldType(item.type, 'dropdown', item.showFieldOn)}}">
+                     <div class="row">
+                        <div class="large-12 columns">
+                           <label>{{item.label}}: </label>
+                           <select name="{{item.name}}">
+                              <template is="dom-repeat" items="{{item.options}}" as="option">
+                                 <option value="{{option.value}}">{{option.name}}</option>
+                              </template>
+        </select>
+        </div>
+        </div>
+        </template>
+        <template is="dom-if" if="{{checkFieldType(item.type, 'toggle', item.showFieldOn)}}">
+                     <div class="row">
+                        <div class="large-12 columns morelink">
+                           <a id="{{field.id}}" on-click="_toggle"> {{item.label}}</a><br/>
+                        </div>
+                     </div>
+                  </template>
+
+        </template>
+    </form>
+    </div>
+    <div class="popup-footer">
+        <button class="button button-primary" on-click="_closeBox">{{popupConfig.button.cancel}}</button>
+        <button class="button button-primary" on-click="_submitBox">{{popupConfig.button.add}}</button>
+    </div>
+    </div>
+    <!--/div!-->
+    </div>
+    </template>
+    </template>
+
+    <script>
+        /**
+         * @customElement
+         * @polymer
+         */
+        class TrmbCreatePopup extends Polymer.Element {
+
+            static get is() {
+                return 'trmb-create-popup';
+            }
+            static get properties() {
+                return {
+                    showPopupBoolean: Boolean,
+                    showPopup: {
+                        type: String,
+                        notify: true,
+                        observer: '_showPopupToggle'
+                    },
+                    isConfigReady: {
+                        type: String,
+                        observer: '_onConfigReady'
+                    },
+                    _isConfigReadyAsBool: {
+                        type: Boolean,
+                        value: true
+                    },
+                    type: {
+                        type: String,
+                        observer: '_onTypeChanged'
+                    },
+                    layoutSchema: {
+                        type: String,
+                        observer: '_onLayoutChanged',
+                    },
+                    updatedLayoutSchema: {
+                        type: Object,
+                        value: {},
+                    },
+                    popupConfig: {
+                        type: Object,
+                        notify: true
+                    },
+                    postUrl: String,
+                    bearerToken: String,
+                    xApikey: String,
+                    sendAsJson: {
+                        type: String,
+                        value: "true"
+                    },
+                    _isCreated: {
+                        type: Boolean,
+                        value: false
+                    },
+                    _isError: {
+                        type: Boolean,
+                        value: false
+                    }
+                };
+            }
+            ready() {
+                super.ready();
+                if (undefined == this.showPopup) {
+                    this.showPopupBoolean = true;
+                    this.setAttribute('show-popup', true);
+                }
+            }
+            _closeBox() {
+                this.showPopupBoolean = false;
+                this.setAttribute('show-popup', false);
+            }
+            _showPopupToggle() {
+                if (this.showPopup.toLowerCase() == 'true') {
+                    this.showPopupBoolean = true;
+                } else {
+                    this.showPopupBoolean = false;
+                }
+            }
+            _submitBox() {
+                var formData = new FormData(this.shadowRoot.getElementById('create-popup-form'));
+
+                /*var formElem = this.shadowRoot.getElementById('create-popup-form');
+                Object.keys(formElem).forEach(function(i) {
+                    if (!isNaN(i)) {
+                        console.log(formElem[i].getAttribute('name'), formElem[i].getAttribute('value'));
+                        formData.append(formElem[i].getAttribute('name'), formElem[i].getAttribute('value'));
+                    }
+                });*/
+                var convertedJSON = {},
+                    it = formData.entries(),
+                    n;
+
+                while (n = it.next()) {
+                    if (!n || n.done) break;
+                    convertedJSON[n.value[0]] = n.value[1];
+                }
+
+                var req = new XMLHttpRequest();
+
+                xhr.onreadystatechange = handler.bind(this);
+
+                xhr.open('POST', this.postUrl);
+
+                xhr.setRequestHeader('Accept', 'application/json');
+                if (this.xApikey) {
+                    xhr.setRequestHeader('x-apikey', xApiToken);
+                } else if (this.bearerToken) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + accessToken)
+                }
+                if (this.sendAsJson == 'true') {
+                    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    xhr.send(JSON.stringify(convertedJSON));
+                } else {
+                    xhr.send(formData);
+                }
+
+                function handler(e) {
+                    console.log(e.target);
+                    if (e.target.readyState === 4) {
+                        if (e.target.status === 201) {
+                            this._isCreated = true;
+                        } else {
+                            this._isError = true;
+                        }
+                    }
+                }
+            }
+            _onLayoutChanged() {
+                if (this.layoutSchema) {
+                    this.onBeforeLoadConfig(JSON.parse(this.layoutSchema));
+                }
+            }
+            _onTypeChanged() {
+                if (this.type && !this.layoutSchema) {
+                    //Load layout schema based on the type
+                    this.loadJSON(this.resolveUrl('layoutSchema/' + this.type + '.json'), function(response) {
+                        // Parse JSON string into object
+                        //this.onBeforeLoadConfig(JSON.parse(response));
+                        this.layoutSchema = response;
+                    }.bind(this));
+                }
+            }
+
+            _onConfigReady() {
+                this._isConfigReadyAsBool = (this.isConfigReady == undefined || (this.isConfigReady.toLowerCase() == 'true'));
+                //this.onBeforeLoadConfig(this.layoutSchema);
+            }
+            onBeforeLoadConfig(layoutSchema) {
+                //this.callFunc = new Function('return ' + this.onPopupLoad);
+                //this.callFunc(); // can now be called here or elsewhere in the Polymer object
+                if (this._isConfigReadyAsBool) {
+                    layoutSchema.fields.forEach(function(field) {
+                        if (field.type == "toggle") {
+                            this[field.modelKey] = field.value;
+                            field.label = (field.value) ? field.labelOn : field.labelOff;
+                        }
+                    }.bind(this));
+                    this.popupConfig = layoutSchema;
+                } else {
+                    this.event = new CustomEvent('pre-load-config', {
+                        detail: {
+                            layoutSchema: layoutSchema
+                        }
+                    });
+                    window.dispatchEvent(this.event);
+                }
+            }
+            checkFieldType(fieldType, value, showFieldOn) {
+                return (fieldType == value && (!showFieldOn || this[showFieldOn]));
+            }
+            _toggle(e) {
+                var fieldIndex = e.model.__data.index;
+                var field = e.model.__data.item;
+                field.value = !field.value;
+                field.label = (field.value) ? field.labelOn : field.labelOff;
+                this.popupConfig.fields[fieldIndex] = field;
+                var tmp = this.popupConfig;
+                //this.onBeforeLoadConfig(this.popupConfig);
+                this.set('popupConfig', []);
+                this.$.createpopup.render();
+                this[field.modelKey] = field.value;
+                this.set('popupConfig', tmp);
+                this.$.createpopup.render();
+            }
+
+
+            loadJSON(fileName, callback) {
+                var xobj = new XMLHttpRequest();
+                //xobj.overrideMimeType("application/json");
+                xobj.open('GET', fileName, true);
+                xobj.onreadystatechange = function() {
+                    if (xobj.readyState === 4 && xobj.status === 200) {
+                        // Required use of an anonymous callback 
+                        // as .open() will NOT return a value but simply returns undefined in asynchronous mode
+                        callback(xobj.responseText);
+                    }
+                };
+                xobj.send(null);
+            }
+        }
+
+        window.customElements.define(TrmbCreatePopup.is, TrmbCreatePopup);
+    </script>
+</dom-module>
