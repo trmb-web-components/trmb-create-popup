@@ -74,15 +74,23 @@
         [hidden] {
             display: none !important;
         }
+        .alert-box.error {
+            color: darkred;
+            background-color: #FFFFFF;
+            width:100%;
+            padding: 5px;
+        }
         .alert-box.warning {
-            background-color: #f08a24;
-            border-color: #de770f;
-            color: #FFFFFF;
+            color: #f08a24;
+            background-color: #FFFFFF;
+            width:100%;
+            padding: 5px;
         }
         .alert-box.success {
-            background-color: #43AC6A;
-            border-color: #3a945b;
-            color: #FFFFFF;
+            color:darkgreen;
+            background-color: #FFFFFF;
+            width:100%;
+            padding: 5px;
         }
     </style>
     <template is="dom-if" if="{{showPopupBoolean}}" id="createpopup">
@@ -101,12 +109,12 @@
             </template>
     <dom-if if="{{_isCreated}}">
         <template>
-                 <span class="alert-box success">   {{popupConfig.message.success}} </span>
+                 <div class="alert-box success">   {{popupConfig.message.success}} . User is id {{savedForm._id}}</div>
                 </template>
     </dom-if>
     <dom-if if="{{_isError}}">
         <template>
-                 <span class="alert-box warning">   {{popupConfig.message.warning}}</span>
+                 <div class="alert-box warning">   {{popupConfig.message.warning}}</div>
                 </template>
     </dom-if>
     <form name="create-profilex-form" id="create-popup-form">
@@ -210,13 +218,14 @@
                         type: Object,
                         notify: true
                     },
-                    postUrl: String,
-                    bearerToken: String,
+                    apiUrl: String,
+                    accessToken: String,
                     xApikey: String,
                     sendAsJson: {
                         type: String,
                         value: "true"
                     },
+                    savedForm: Object,
                     _isCreated: {
                         type: Boolean,
                         value: false
@@ -264,17 +273,17 @@
                     convertedJSON[n.value[0]] = n.value[1];
                 }
 
-                var req = new XMLHttpRequest();
+                var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = handler.bind(this);
 
-                xhr.open('POST', this.postUrl);
+                xhr.open('POST', this.apiUrl);
 
                 xhr.setRequestHeader('Accept', 'application/json');
                 if (this.xApikey) {
-                    xhr.setRequestHeader('x-apikey', xApiToken);
-                } else if (this.bearerToken) {
-                    xhr.setRequestHeader("Authorization", "Bearer " + accessToken)
+                    xhr.setRequestHeader('x-apikey', this.xApikey);
+                } else if (this.accessToken) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + this.accessToken)
                 }
                 if (this.sendAsJson == 'true') {
                     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -284,10 +293,11 @@
                 }
 
                 function handler(e) {
-                    console.log(e.target);
                     if (e.target.readyState === 4) {
                         if (e.target.status === 201) {
                             this._isCreated = true;
+                            this.savedForm = JSON.parse(e.target.response);
+                            console.log(this.savedForm);
                         } else {
                             this._isError = true;
                         }

@@ -13,7 +13,7 @@
             "label": "Last Name",
             "type": "text",
             "value": "",
-            "required": false,
+            "required": true,
             "errorMessage": "Please enter the last name"
         },
         {
@@ -23,47 +23,6 @@
             "value": "",
             "required": true,
             "errorMessage": "Please enter the email"
-        },
-        {
-            "name": "morefields",
-            "id": "morefields",
-            "defaultValue": false,
-            "value": false,
-            "labelOff": "More",
-            "labelOn": "Fewer",
-            "type": "toggle",
-            "modelKey": "morefields"
-        },
-
-        {
-            "name": "gender",
-            "label": "Gender",
-            "type": "radio",
-            "options": [{ "name": "male", "value": "male" }, { "name": "female", "value": "female" }],
-            "required": false,
-            "showFieldOn": "morefields"
-        },
-        {
-            "name": "dob",
-            "label": "Date of birth",
-            "type": "date",
-            "required": false,
-            "showFieldOn": "morefields"
-        },
-        {
-            "name": "staticDD",
-            "label": "static Dropdown",
-            "type": "dropdown",
-            "required": false,
-            "showFieldOn": "morefields",
-            "options": [{ "name": "static 1", "value": "static 1" }, { "name": "static 2", "value": "static 2" }]
-        },
-        {
-            "name": "dynamicDD",
-            "label": "Dynamic Dropdown",
-            "type": "dropdown",
-            "showFieldOn": "morefields",
-            "required": false
         }
     ],
     "button": {
