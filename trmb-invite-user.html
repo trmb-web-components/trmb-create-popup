@@ -93,6 +93,9 @@
             padding: 5px;
         }
         .icon-invite-users {
+            padding: 6px;
+            border: 1px solid #cfcfcf;
+            margin-top: 22px;
             display: block;
             width: 20px;
             height: 20px;
@@ -125,13 +128,16 @@
     </dom-if>
     <form name="trmb-invite-user-popup" id="invite-user-form">
 
-        <div class="row">
-            <div class="large-12 columns">
-                <label>User email: </label><input type="text" value="" name="" required class="cell small-8" /><i class="icon-invite-users cell small-4"></i>
+        <div class="grid-x">
+            <div class="cell large-10">
+                <label>User email: </label><input type="text" value="" name="" required class="cell small-8" />
+            </div>
+            <div class="cell large-1">
+                <i class="icon-invite-users"></i>
             </div>
         </div>
-        <div class="row">
-            <div class="large-12 columns">
+        <div class="grid-x">
+            <div class="cell large-10">
                 <label>Group: </label>
                 <select name="invite-user-groups">
                     <option value=""></option>
@@ -141,8 +147,8 @@
                 </select>
             </div>
         </div>
-        <div class="row">
-            <div class="large-12 columns">
+        <div class="grid-x">
+            <div class="cell large-10">
                 <label>Role: </label>
                 <select name="invite-user-groups">
                     <option value=""></option>

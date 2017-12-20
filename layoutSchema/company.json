@@ -6,7 +6,7 @@
             "type": "text",
             "value": "",
             "required": true,
-            "errorMessage": "Please enter the first name"
+            "errorMessage": "Please enter the company name"
         },
         {
             "name": "domainUrls",
@@ -14,7 +14,10 @@
             "type": "text",
             "value": "",
             "required": false,
-            "errorMessage": "Please enter the last name"
+            "values": [""],
+            "valuesIndex": [0],
+            "multiple": true,
+            "errorMessage": "Please enter the domain urls"
         }
     ],
     "button": {
@@ -22,7 +25,7 @@
         "cancel": "Cancel"
     },
     "message": {
-        "success": "User was successfully created",
-        "warning": "Error in creating user"
+        "success": "Company was successfully created",
+        "warning": "Error in creating company"
     }
 }

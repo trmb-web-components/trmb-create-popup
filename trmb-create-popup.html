@@ -92,11 +92,32 @@
             width:100%;
             padding: 5px;
         }
+        .plus-icon {
+            display:block;
+            width: 20px;
+            height: 20px;
+            background-image: url(images/icon_line_plus_16-32-64.svg);
+            padding: 8px;
+            padding-bottom: 7px;
+            cursor: pointer;
+        }
+        .minus-icon {
+            display:block;
+            width: 20px;
+            height: 20px;
+            background-image: url(images/icon_line_minus_24-48-96.svg);
+            padding: 8px;
+            padding-bottom: 7px;
+            cursor: pointer;
+        }
+        .first-child {
+            margin-top: 21px;
+        }
     </style>
     <template is="dom-if" if="{{showPopupBoolean}}" id="createpopup">
    <div class="popup-container" id="createpopup-container">
       <!--div class="popup-content" !-->
-      <div class="cell large-6 callout secondary"  id="createpopup-container">
+      <div class="cell large-10 callout secondary"  id="createpopup-container">
          <span class="close" on-click="_closeBox">&times;</span>
          <h3>{{popupConfig.heading}}</h3>
          <!--div class="popup-header">
@@ -118,17 +139,38 @@
                 </template>
     </dom-if>
     <form name="create-profilex-form" id="create-popup-form">
-        <template is="dom-repeat" items="{{popupConfig.fields}}">
-                  <template is="dom-if" if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
-                     <div class="row">
-                        <div class="large-12 columns">
-                           <label>{{item.label}}: </label><input type="text" value="" name="{{item.name}}" required="{{item.required}}">
+        <template is="dom-repeat" items="{{popupConfig.fields}}" index-as="fieldIndex">
+        <template is="dom-if" if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
+            <div class="grid-x">
+                <template is="dom-repeat" items="{{item.values}}" as="itemValue" index-as="itemIndex">
+                    <div class="cell large-10">
+                    <template is="dom-if"  if="{{!_hasMoreField(itemIndex)}}">
+                        <label>{{item.label}}: </label>
+                    </template>
+        <input type="text" value="{{itemValue::change}}" name$="{{_getItemName(item.name, itemIndex)}}" required="{{item.required}}">
+        </div>
+        <template is="dom-if" if="{{item.multiple}}">
+                        <div class="cell large-1">
+                            <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
                         </div>
-                     </div>
-                  </template>
+                    </template>
+        <template is="dom-if" if="{{_hasMoreField(itemIndex)}}">
+                        <div class="cell large-1">
+                            <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
+                        </div>
+                    </template>
+
+        </template>
+        <template is="dom-if" if="{{!item.multiple}}">
+                    <div class="cell large-10">
+                        <label>{{item.label}}: </label><input type="text" value="{{item.value::change}}" name="{{item.name}}" required="{{item.required}}">
+                    </div>
+                </template>
+        </div>
+        </template>
         <template is="dom-if" if="{{checkFieldType(item.type, 'radio', item.showFieldOn)}}">
-                     <div class="row">
-                        <div class="large-12 columns">
+                     <div class="grid-x">
+                        <div class="cell large-10">
                            <label>{{item.label}}: </label>
                            <template is="dom-repeat" items="{{item.options}}" as="option">
                               <input type="radio" name="{{item.name}}" value="{{option.value}}"> {{option.value}}
@@ -137,15 +179,15 @@
         </div>
         </template>
         <template is="dom-if" if="{{checkFieldType(item.type, 'date', item.showFieldOn)}}">
-                     <div class="row">
-                        <div class="large-12 columns">
+                     <div class="grid-x">
+                        <div class="cell large-10">
                            <label>{{item.label}}: </label><input type="date" value="" name="{{item.name}}">
                         </div>
                      </div>
                   </template>
         <template is="dom-if" if="{{checkFieldType(item.type, 'dropdown', item.showFieldOn)}}">
-                     <div class="row">
-                        <div class="large-12 columns">
+                     <div class="grid-x">
+                        <div class="cell large-10">
                            <label>{{item.label}}: </label>
                            <select name="{{item.name}}">
                               <template is="dom-repeat" items="{{item.options}}" as="option">
@@ -156,7 +198,7 @@
         </div>
         </template>
         <template is="dom-if" if="{{checkFieldType(item.type, 'toggle', item.showFieldOn)}}">
-                     <div class="row">
+                     <div class="grid-x">
                         <div class="large-12 columns morelink">
                            <a id="{{field.id}}" on-click="_toggle"> {{item.label}}</a><br/>
                         </div>
@@ -256,14 +298,6 @@
             }
             _submitBox() {
                 var formData = new FormData(this.shadowRoot.getElementById('create-popup-form'));
-
-                /*var formElem = this.shadowRoot.getElementById('create-popup-form');
-                Object.keys(formElem).forEach(function(i) {
-                    if (!isNaN(i)) {
-                        console.log(formElem[i].getAttribute('name'), formElem[i].getAttribute('value'));
-                        formData.append(formElem[i].getAttribute('name'), formElem[i].getAttribute('value'));
-                    }
-                });*/
                 var convertedJSON = {},
                     it = formData.entries(),
                     n;
@@ -272,6 +306,18 @@
                     if (!n || n.done) break;
                     convertedJSON[n.value[0]] = n.value[1];
                 }
+
+                var formObjectData = {};
+
+                this.popupConfig.fields.forEach(function(field) {
+                    if (field.multiple) {
+                        formObjectData[field.name] = field.values;
+                    } else {
+                        formObjectData[field.name] = field.value;
+                    }
+                });
+
+                console.log(convertedJSON, formObjectData);
 
                 var xhr = new XMLHttpRequest();
 
@@ -375,6 +421,43 @@
                     }
                 };
                 xobj.send(null);
+            }
+            _addMoreField(e) {
+                var fieldName = e.model.__data.item.name;
+                var fieldIndex = this.popupConfig.fields.findIndex(function(field) {
+                    return field.name == fieldName;
+                });
+                var tmp = this.popupConfig;
+                this.set('popupConfig', []);
+                this.$.createpopup.render();
+                //var lastValue = tmp.fields[fieldIndex].values.pop() || 1;
+                //tmp.fields[fieldIndex].values.push(lastValue);
+                tmp.fields[fieldIndex].values.push("");
+                this.set('popupConfig', tmp);
+                this.$.createpopup.render();
+            }
+            _hasMoreField(index) {
+                return index > 0;
+            }
+            _removeField(e) {
+                var fieldName = e.model.__data.item.name;
+                var fieldIndex = this.popupConfig.fields.findIndex(function(field) {
+                    return field.name == fieldName;
+                });
+                var valueIndex = e.model.__data.itemIndex;
+                var tmp = this.popupConfig;
+                this.set('popupConfig', []);
+                this.$.createpopup.render();
+                tmp.fields[fieldIndex].values.splice(valueIndex, 1);
+                this.set('popupConfig', tmp);
+                this.$.createpopup.render();
+            }
+            _addIconClassName(className, index) {
+                return className + ((index == 0) ? ' first-child' : ' not-first-child');
+            }
+            _getItemName(itemName, index) {
+                return itemName + "[" + index + "]";
+
             }
         }
 
