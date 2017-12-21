@@ -6,6 +6,7 @@
 <link rel="import" href="../trmb-css/dist/components/common.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/form.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/button.css.min.html">
+<link rel="import" href="../trmb-css/dist/components/profilex-image.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/xy-grid.css.min.html">
 <dom-module id="trmb-create-popup">
 
@@ -20,6 +21,9 @@
             
         </style>
         <style include="xy-grid-css">
+            
+        </style>
+        <style include="profilex-image-css">
             
         </style>
     <style>
@@ -113,6 +117,12 @@
         .first-child {
             margin-top: 21px;
         }
+        .display-none {
+            display: none;
+        }
+        .display-block {
+            display: block;
+        }
     </style>
     <template is="dom-if" if="{{showPopupBoolean}}" id="createpopup">
    <div class="popup-container" id="createpopup-container">
@@ -125,12 +135,14 @@
             <span class="close" on-click="_closeBox">&times;</span>
             </div!-->
          <div class="popup-body">
-            <template is="dom-if" if="{{!_isConfigReadyAsBool}}" id="ready-loading">
-               Loading..
-            </template>
+    <dom-if if="{{!_isConfigReadyAsBool}}" id="ready-loading">
+        <template >
+            Loading..
+        </template>
+    </dom-if>
     <dom-if if="{{_isCreated}}">
         <template>
-                 <div class="alert-box success">   {{popupConfig.message.success}} . User is id {{savedForm._id}}</div>
+                 <div class="alert-box success">   {{popupConfig.message.success}}. <br/> User is id {{savedForm.id}}</div>
                 </template>
     </dom-if>
     <dom-if if="{{_isError}}">
@@ -138,8 +150,22 @@
                  <div class="alert-box warning">   {{popupConfig.message.warning}}</div>
                 </template>
     </dom-if>
+    <dom-if if="{{_isSaving}}">
+        <template>
+           Please wait.. saving..
+        </template>
+    </dom-if>
     <form name="create-profilex-form" id="create-popup-form">
         <template is="dom-repeat" items="{{popupConfig.fields}}" index-as="fieldIndex">
+        <dom-if if="{{checkFieldType(item.type, 'image', item.showFieldOn)}}"> 
+            <template>
+                <div class="profilex-image mini">
+                    <img id="profilex-image-preview" />
+                    <span class="edit-icon" on-click="_openFileBrowse"></span>
+                    <input type="file" name="file" id="profilex-image-file" on-change="_showPreview"/>
+                </div>
+            </template>
+        </dom-if>
         <template is="dom-if" if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
             <div class="grid-x">
                 <template is="dom-repeat" items="{{item.values}}" as="itemValue" index-as="itemIndex">
@@ -147,26 +173,27 @@
                     <template is="dom-if"  if="{{!_hasMoreField(itemIndex)}}">
                         <label>{{item.label}}: </label>
                     </template>
-        <input type="text" value="{{itemValue::change}}" name$="{{_getItemName(item.name, itemIndex)}}" required="{{item.required}}">
-        </div>
-        <template is="dom-if" if="{{item.multiple}}">
-                        <div class="cell large-1">
-                            <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
-                        </div>
-                    </template>
-        <template is="dom-if" if="{{_hasMoreField(itemIndex)}}">
-                        <div class="cell large-1">
-                            <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
-                        </div>
-                    </template>
-
-        </template>
-        <template is="dom-if" if="{{!item.multiple}}">
-                    <div class="cell large-10">
-                        <label>{{item.label}}: </label><input type="text" value="{{item.value::change}}" name="{{item.name}}" required="{{item.required}}">
+                    <input type="text" value="{{itemValue::change}}" name$="{{_getItemName(item.name, itemIndex)}}" required="{{item.required}}">
                     </div>
-                </template>
-        </div>
+                    <template is="dom-if" if="{{item.multiple}}">
+                                    <div class="cell large-1">
+                                        <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
+                                    </div>
+                                </template>
+                    <template is="dom-if" if="{{_hasMoreField(itemIndex)}}">
+                                    <div class="cell large-1">
+                                        <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
+                                    </div>
+                                </template>
+
+                    </template>
+                    <template is="dom-if" if="{{!item.multiple}}">
+                                <div class="cell large-10">
+                                    <label>{{item.label}}: </label><input type="text" value="{{item.value::change}}" name="{{item.name}}" required="{{item.required}}">
+                                    <small class$="{{_addDisplayClassName('form-error', item.error)}}">{{item.errorMessage}}</small>
+                                </div>
+                            </template>
+                    </div>
         </template>
         <template is="dom-if" if="{{checkFieldType(item.type, 'radio', item.showFieldOn)}}">
                      <div class="grid-x">
@@ -275,6 +302,10 @@
                     _isError: {
                         type: Boolean,
                         value: false
+                    },
+                    _isSaving : {
+                        type: Boolean,
+                        value: false
                     }
                 };
             }
@@ -286,6 +317,20 @@
                 }
             }
             _closeBox() {
+                this.popupConfig.fields.forEach(function(field){
+                    field.value = null;
+                    field.error = false;
+                    if( field.multiple ) {
+                        field.values = [''];
+                    }
+                });
+                var otherProperties = [];
+                otherProperties.push({'name': '_isError', value: false});
+                otherProperties.push({'name': '_isCreated', value: false});
+                this._reRenderPopup(this.popupConfig, otherProperties);
+                window.setTimeout(function(){
+                    //just wait for 1 sec
+                }.bind(this), 1000);
                 this.showPopupBoolean = false;
                 this.setAttribute('show-popup', false);
             }
@@ -308,23 +353,39 @@
                 }
 
                 var formObjectData = {};
+                var formHasError = false;
 
                 this.popupConfig.fields.forEach(function(field) {
-                    if (field.multiple) {
-                        formObjectData[field.name] = field.values;
-                    } else {
-                        formObjectData[field.name] = field.value;
+                    if( field.type != 'image') {
+                        formObjectData[field.name] = field.value || field.values.join('').split('');
+                        if (field.required && !field.value) {
+                            field.error = true;
+                            formHasError = true;
+                        }
                     }
                 });
 
-                console.log(convertedJSON, formObjectData);
+                convertedJSON = formObjectData;
 
+                if (formHasError) {
+                    this._reRenderPopup(this.popupConfig);
+                } else {
+                    this._isSaving = true;
+                    var xhr = this._generateXHRObject('POST', this.apiUrl);
+
+                    if (this.sendAsJson == 'true') {
+                        xhr.send(JSON.stringify(convertedJSON));
+                    } else {
+                        xhr.send(formData);
+                    }
+                }
+            }
+            _generateXHRObject(method, url) {
                 var xhr = new XMLHttpRequest();
+                
+                xhr.onreadystatechange = this._xhrHandler.bind(this);
 
-                xhr.onreadystatechange = handler.bind(this);
-
-                xhr.open('POST', this.apiUrl);
-
+                xhr.open( method, url);
                 xhr.setRequestHeader('Accept', 'application/json');
                 if (this.xApikey) {
                     xhr.setRequestHeader('x-apikey', this.xApikey);
@@ -332,21 +393,39 @@
                     xhr.setRequestHeader("Authorization", "Bearer " + this.accessToken)
                 }
                 if (this.sendAsJson == 'true') {
-                    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                    xhr.send(JSON.stringify(convertedJSON));
-                } else {
-                    xhr.send(formData);
+                    xhr.setRequestHeader("Content-Type", "application/json");
                 }
-
-                function handler(e) {
-                    if (e.target.readyState === 4) {
-                        if (e.target.status === 201) {
-                            this._isCreated = true;
-                            this.savedForm = JSON.parse(e.target.response);
-                            console.log(this.savedForm);
-                        } else {
-                            this._isError = true;
+                return xhr;
+            }
+            _xhrHandler(e) {
+                if (e.target.readyState === 4) {
+                    this._isSaving = false; 
+                    var photo = this.shadowRoot.getElementById('profilex-image-file');
+                    var file = photo.files[0];
+                    this.popupConfig.fields.forEach(function(field) {
+                        field.error = false;
+                    });
+                    this._reRenderPopup(this.popupConfig);
+                    if (e.target.status === 201 || e.target.status === 200 ) {
+                        this._isCreated = true;
+                        this.savedForm = JSON.parse(e.target.response);
+                        if(this.savedForm.id) {
+                            var data = new FormData();
+                            if(file && file.size > 0 ) {
+                                data.append('file', file, file.name);
+                                var xhr = new XMLHttpRequest();             
+                                xhr.onreadystatechange = this._xhrHandler.bind(this);
+                                xhr.open('PUT', this.apiUrl + '/'+ this.savedForm.id + '/image');
+                                if (this.xApikey) {
+                                    xhr.setRequestHeader('x-apikey', this.xApikey);
+                                } else if (this.accessToken) {
+                                    xhr.setRequestHeader("Authorization", "Bearer " + this.accessToken)
+                                }
+                                xhr.send(data);
+                            }
                         }
+                    } else {
+                        this._isError = true;
                     }
                 }
             }
@@ -400,12 +479,9 @@
                 field.label = (field.value) ? field.labelOn : field.labelOff;
                 this.popupConfig.fields[fieldIndex] = field;
                 var tmp = this.popupConfig;
-                //this.onBeforeLoadConfig(this.popupConfig);
-                this.set('popupConfig', []);
-                this.$.createpopup.render();
                 this[field.modelKey] = field.value;
-                this.set('popupConfig', tmp);
-                this.$.createpopup.render();
+                this._reRenderPopup(tmp);
+                //this.onBeforeLoadConfig(this.popupConfig);
             }
 
 
@@ -428,13 +504,8 @@
                     return field.name == fieldName;
                 });
                 var tmp = this.popupConfig;
-                this.set('popupConfig', []);
-                this.$.createpopup.render();
-                //var lastValue = tmp.fields[fieldIndex].values.pop() || 1;
-                //tmp.fields[fieldIndex].values.push(lastValue);
                 tmp.fields[fieldIndex].values.push("");
-                this.set('popupConfig', tmp);
-                this.$.createpopup.render();
+                this._reRenderPopup(tmp);
             }
             _hasMoreField(index) {
                 return index > 0;
@@ -446,18 +517,44 @@
                 });
                 var valueIndex = e.model.__data.itemIndex;
                 var tmp = this.popupConfig;
-                this.set('popupConfig', []);
-                this.$.createpopup.render();
                 tmp.fields[fieldIndex].values.splice(valueIndex, 1);
-                this.set('popupConfig', tmp);
-                this.$.createpopup.render();
+                this._reRenderPopup(tmp);
             }
             _addIconClassName(className, index) {
                 return className + ((index == 0) ? ' first-child' : ' not-first-child');
             }
+            _addDisplayClassName(className, isError) {
+                return className + ((!isError) ? ' display-none' : ' display-block');
+            }
             _getItemName(itemName, index) {
                 return itemName + "[" + index + "]";
 
+            }
+            _reRenderPopup(updatePopupConfig, otherProperties) {
+                otherProperties = otherProperties || [];
+                this.set('popupConfig', []);
+                this.$.createpopup.render();
+                this.set('popupConfig', updatePopupConfig);
+                otherProperties.forEach(function(property){
+                    this.set(property.name, property.value);
+                }.bind(this));
+                this.$.createpopup.render();
+            }
+            _openFileBrowse() {
+                this.shadowRoot.getElementById('profilex-image-file').click();
+            }
+            _showPreview() {
+                var photo = this.shadowRoot.getElementById('profilex-image-file');
+                var file = photo.files[0];
+
+                var preview = this.shadowRoot.getElementById('profilex-image-preview');
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.setAttribute('src', e.target.result);
+                };
+
+                reader.readAsDataURL(file);
             }
         }
 

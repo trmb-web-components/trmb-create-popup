@@ -1,12 +1,23 @@
 {
     "heading": "Create Company",
-    "fields": [{
-            "name": "companyName",
+    "fields": [
+        {
+            "name": "imageUrl",
+            "label": "Company Logo",
+            "type": "image",
+            "value": "",
+            "required": false,
+            "errorMessage": "Please enter the value image",
+            "error": false
+        },
+        {
+            "name": "name",
             "label": "Company Name",
             "type": "text",
             "value": "",
             "required": true,
-            "errorMessage": "Please enter the company name"
+            "errorMessage": "Please enter the company name",
+            "error": false
         },
         {
             "name": "domainUrls",
@@ -15,7 +26,16 @@
             "value": "",
             "required": false,
             "values": [""],
-            "valuesIndex": [0],
+            "multiple": true,
+            "errorMessage": "Please enter the domain urls"
+        },
+        {
+            "name": "locations",
+            "label": "location",
+            "type": "group",
+            "value": "",
+            "required": false,
+            "values": [],
             "multiple": true,
             "errorMessage": "Please enter the domain urls"
         }

@@ -7,7 +7,7 @@
 <link rel="import" href="../trmb-css/dist/components/form.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/button.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/xy-grid.css.min.html">
-<dom-module id="trmb-invite-user">
+<dom-module id="trmb-add-user-to-company">
 
     <template>
         <style include="common-css">
@@ -129,7 +129,7 @@
                  <div class="alert-box warning">   {{message.warning}}</div>
                 </template>
     </dom-if>
-    <form name="trmb-invite-user-popup" id="invite-user-form">
+    <form name="trmb-add-user-to-company-popup" id="invite-user-form">
 
         <div class="grid-x">
             <div class="cell large-10">
@@ -192,10 +192,10 @@
          * @customElement
          * @polymer
          */
-        class TrmbInviteUser extends Polymer.Element {
+        class TrmbAddUserToCompany extends Polymer.Element {
 
             static get is() {
-                return 'trmb-invite-user';
+                return 'trmb-add-user-to-company';
             }
             static get properties() {
                 return {
@@ -399,6 +399,6 @@
             }
         }
 
-        window.customElements.define(TrmbInviteUser.is, TrmbInviteUser);
+        window.customElements.define(TrmbAddUserToCompany.is, TrmbAddUserToCompany);
     </script>
 </dom-module>
