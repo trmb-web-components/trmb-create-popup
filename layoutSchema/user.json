@@ -1,27 +1,76 @@
 {
     "heading": "Create User",
     "fields": [{
-            "name": "firstName",
+            "name": "imageUrl",
+            "label": "Upload user image",
+            "type": "image",
+            "value": "",
+            "required": false,
+            "errorMessage": "Please upload the valid image",
+            "error": false
+        },
+        {
+            "name": "first_name",
             "label": "First Name",
             "type": "text",
-            "value": "",
+            "values": [{ "value": "", "error": "" }],
             "required": true,
             "errorMessage": "Please enter the first name"
         },
         {
-            "name": "lastName",
+            "name": "last_name",
             "label": "Last Name",
             "type": "text",
-            "value": "",
+            "values": [{ "value": "", "error": "" }],
             "required": true,
             "errorMessage": "Please enter the last name"
         },
         {
-            "name": "emailName",
+            "name": "emails",
             "label": "Email",
-            "type": "text",
-            "value": "",
+            "type": "groupFields",
+            "groupValues": {
+              "type":"",
+              "address":"",
+              "primary":false
+            },
+            "values": [{ "value": "", "error": "" }],
             "required": true,
+            "multiple": true,
+            "groupFields": [{
+                    "name": "type",
+                    "label": "Type",
+                    "type": "dropdown",
+                    "required": false,
+                    "cellSpace": 3,
+                    "options": [{
+                            "name": "Work",
+                            "value": "work"
+                        },
+                        {
+                            "name": "Home",
+                            "value": "home"
+                        }
+                    ]
+                },
+                {
+                    "name": "address",
+                    "label": "Address",
+                    "type": "text",
+                    "required": true,
+                    "cellSpace": 5,
+                    "value": "",
+                    "errorMessage": "Please enter the valid address"
+                },
+                {
+                    "name": "primary",
+                    "label": "set as primary",
+                    "type": "checkbox",
+                    "cellSpace": 2,
+                    "required": false,
+                    "value": false
+                }
+            ],
             "errorMessage": "Please enter the email"
         }
     ],

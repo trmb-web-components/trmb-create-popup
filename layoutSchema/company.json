@@ -1,9 +1,8 @@
 {
     "heading": "Create Company",
-    "fields": [
-        {
+    "fields": [{
             "name": "imageUrl",
-            "label": "Company Logo",
+            "label": "Upload company logo",
             "type": "image",
             "value": "",
             "required": false,
@@ -14,7 +13,7 @@
             "name": "name",
             "label": "Company Name",
             "type": "text",
-            "value": "",
+            "values": [{ "value": "", "error": "" }],
             "required": true,
             "errorMessage": "Please enter the company name",
             "error": false
@@ -23,19 +22,94 @@
             "name": "domainUrls",
             "label": "Domain urls",
             "type": "text",
-            "value": "",
             "required": false,
-            "values": [""],
+            "values": [{ "value": "", "error": "" }],
             "multiple": true,
             "errorMessage": "Please enter the domain urls"
         },
         {
             "name": "locations",
-            "label": "location",
-            "type": "group",
-            "value": "",
+            "label": "Addressess",
+            "type": "groupFields",
             "required": false,
-            "values": [],
+            "values": [{ "value": "", "error": "" }],
+            "groupFields": [{
+                    "name": "type",
+                    "label": "Type",
+                    "type": "dropdown",
+                    "cellSpace": 3,
+                    "options": [{
+                            "name": "Work",
+                            "value": "work"
+                        },
+                        {
+                            "name": "Home",
+                            "value": "home"
+                        }
+                    ],
+                    "required": false,
+                    "error": false
+                },
+                {
+                    "name": "street",
+                    "label": "Street",
+                    "type": "text",
+                    "required": false,
+                    "cellSpace": 7,
+                    "value": "",
+                    "errorMessage": "Please enter the valid street"
+                },
+                {
+                    "name": "addMoreField",
+                    "label": "addMoreField",
+                    "type": "addMoreField",
+                    "cellSpace": 1
+                },
+                {
+                    "name": "locality",
+                    "label": "Locality",
+                    "type": "text",
+                    "required": false,
+                    "cellSpace": 5,
+                    "value": "",
+                    "errorMessage": "Please enter the valid locality"
+                },
+                {
+                    "name": "region",
+                    "label": "Region",
+                    "type": "text",
+                    "required": false,
+                    "cellSpace": 5,
+                    "value": "",
+                    "errorMessage": "Please enter the valid region"
+                },
+                {
+                    "name": "postalCode",
+                    "label": "Postal Code",
+                    "type": "text",
+                    "required": false,
+                    "cellSpace": 3,
+                    "value": "",
+                    "errorMessage": "Please enter the valid postal code"
+                },
+                {
+                    "name": "country",
+                    "label": "Country",
+                    "type": "text",
+                    "required": false,
+                    "cellSpace": 8,
+                    "value": "",
+                    "errorMessage": "Please enter the valid country"
+                },
+                {
+                    "name": "primary",
+                    "label": "set as primary",
+                    "type": "checkbox",
+                    "cellSpace": 10,
+                    "required": false,
+                    "value": ""
+                }
+            ],
             "multiple": true,
             "errorMessage": "Please enter the domain urls"
         }

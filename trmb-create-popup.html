@@ -2,249 +2,338 @@
 <link rel="import" href="../@polymer/polymer/lib/elements/dom-if.html">
 <link rel="import" href="../@polymer/polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../@polymer/polymer/lib/utils/resolve-url.html">
-
 <link rel="import" href="../trmb-css/dist/components/common.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/form.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/button.css.min.html">
+<link rel="import" href="../trmb-css/dist/components/checkbox.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/profilex-image.css.min.html">
 <link rel="import" href="../trmb-css/dist/components/xy-grid.css.min.html">
 <dom-module id="trmb-create-popup">
-
     <template>
-        <style include="common-css">
-            
-        </style>
-        <style include="form-css">
-            
-        </style>
-        <style include="button-css">
-            
-        </style>
-        <style include="xy-grid-css">
-            
-        </style>
-        <style include="profilex-image-css">
-            
-        </style>
-    <style>
-        .popup-container {
-            position: fixed;
-            /* Stay in place */
-            z-index: 1;
-            /* Sit on top */
-            padding-top: 100px;
-            /* Location of the box */
-            left: 0;
-            top: 0;
-            width: 100%;
-            /* Full width */
-            height: 100%;
-            /* Full height */
-            overflow: auto;
-            /* Enable scroll if needed */
-            background-color: rgb(0, 0, 0);
-            /* Fallback color */
-            background-color: rgba(0, 0, 0, 0.4);
-            /* Black w/ opacity */
-        }
-        /* Modal Content */
-        
-        .callout {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 450px;
-        }
-        /* The Close Button */
-        
-        .close {
-            color: #aaaaaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        
-        .close:hover,
-        .close:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .morelink {
-            margin: 0 0 1rem;
-        }
-        
-        [hidden] {
-            display: none !important;
-        }
-        .alert-box.error {
-            color: darkred;
-            background-color: #FFFFFF;
-            width:100%;
-            padding: 5px;
-        }
-        .alert-box.warning {
-            color: #f08a24;
-            background-color: #FFFFFF;
-            width:100%;
-            padding: 5px;
-        }
-        .alert-box.success {
-            color:darkgreen;
-            background-color: #FFFFFF;
-            width:100%;
-            padding: 5px;
-        }
-        .plus-icon {
-            display:block;
-            width: 20px;
-            height: 20px;
-            background-image: url(images/icon_line_plus_16-32-64.svg);
-            padding: 8px;
-            padding-bottom: 7px;
-            cursor: pointer;
-        }
-        .minus-icon {
-            display:block;
-            width: 20px;
-            height: 20px;
-            background-image: url(images/icon_line_minus_24-48-96.svg);
-            padding: 8px;
-            padding-bottom: 7px;
-            cursor: pointer;
-        }
-        .first-child {
-            margin-top: 21px;
-        }
-        .display-none {
-            display: none;
-        }
-        .display-block {
-            display: block;
-        }
-    </style>
-    <template is="dom-if" if="{{showPopupBoolean}}" id="createpopup">
-   <div class="popup-container" id="createpopup-container">
-      <!--div class="popup-content" !-->
-      <div class="cell large-10 callout secondary"  id="createpopup-container">
-         <span class="close" on-click="_closeBox">&times;</span>
-         <h3>{{popupConfig.heading}}</h3>
-         <!--div class="popup-header">
-            <h2 class="popup-header-title"></h2>
-            <span class="close" on-click="_closeBox">&times;</span>
-            </div!-->
-         <div class="popup-body">
-    <dom-if if="{{!_isConfigReadyAsBool}}" id="ready-loading">
-        <template >
-            Loading..
-        </template>
-    </dom-if>
-    <dom-if if="{{_isCreated}}">
-        <template>
-                 <div class="alert-box success">   {{popupConfig.message.success}}. <br/> User is id {{savedForm.id}}</div>
-                </template>
-    </dom-if>
-    <dom-if if="{{_isError}}">
-        <template>
-                 <div class="alert-box warning">   {{popupConfig.message.warning}}</div>
-                </template>
-    </dom-if>
-    <dom-if if="{{_isSaving}}">
-        <template>
-           Please wait.. saving..
-        </template>
-    </dom-if>
-    <form name="create-profilex-form" id="create-popup-form">
-        <template is="dom-repeat" items="{{popupConfig.fields}}" index-as="fieldIndex">
-        <dom-if if="{{checkFieldType(item.type, 'image', item.showFieldOn)}}"> 
-            <template>
-                <div class="profilex-image mini">
-                    <img id="profilex-image-preview" />
-                    <span class="edit-icon" on-click="_openFileBrowse"></span>
-                    <input type="file" name="file" id="profilex-image-file" on-change="_showPreview"/>
-                </div>
-            </template>
-        </dom-if>
-        <template is="dom-if" if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
-            <div class="grid-x">
-                <template is="dom-repeat" items="{{item.values}}" as="itemValue" index-as="itemIndex">
-                    <div class="cell large-10">
-                    <template is="dom-if"  if="{{!_hasMoreField(itemIndex)}}">
-                        <label>{{item.label}}: </label>
-                    </template>
-                    <input type="text" value="{{itemValue::change}}" name$="{{_getItemName(item.name, itemIndex)}}" required="{{item.required}}">
-                    </div>
-                    <template is="dom-if" if="{{item.multiple}}">
-                                    <div class="cell large-1">
-                                        <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
-                                    </div>
-                                </template>
-                    <template is="dom-if" if="{{_hasMoreField(itemIndex)}}">
-                                    <div class="cell large-1">
-                                        <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
-                                    </div>
-                                </template>
+      <style include="common-css">
+      </style>
+      <style include="form-css">
+      </style>
+      <style include="button-css">
+      </style>
+      <style include="checkbox-css">
+      </style>
+      <style include="xy-grid-css">
+      </style>
+      <style include="profilex-image-css">
+      </style>
+      <style>
+         .popup-container {
+         position: fixed;
+         /* Stay in place */
+         z-index: 1;
+         /* Sit on top */
+         padding-top: 100px;
+         /* Location of the box */
+         left: 0;
+         top: 0;
+         width: 100%;
+         /* Full width */
+         height: 100%;
+         /* Full height */
+         overflow: auto;
+         /* Enable scroll if needed */
+         background-color: rgb(0, 0, 0);
+         /* Fallback color */
+         background-color: rgba(0, 0, 0, 0.4);
+         /* Black w/ opacity */
+         }
+         .popup-body {
+            height: 305px;
+            overflow-y: auto;
+         }
+         /* Modal Content */
+         .callout {
+         background-color: #fefefe;
+         margin: auto;
+         padding: 20px;
+         border: 1px solid #888;
+         width: 450px;
+         }
+         /* The Close Button */
+         .close {
+         color: #aaaaaa;
+         float: right;
+         font-size: 28px;
+         font-weight: bold;
+         }
+         .close:hover,
+         .close:focus {
+         color: #000;
+         text-decoration: none;
+         cursor: pointer;
+         }
+         .morelink {
+         margin: 0 0 1rem;
+         }
+         [hidden] {
+         display: none !important;
+         }
+         .alert-box.error {
+         color: darkred;
+         background-color: #FFFFFF;
+         width:100%;
+         padding: 5px;
+         }
+         .alert-box.warning {
+         color: #f08a24;
+         background-color: #FFFFFF;
+         width:100%;
+         padding: 5px;
+         }
+         .alert-box.success {
+         color:darkgreen;
+         background-color: #FFFFFF;
+         width:100%;
+         padding: 5px;
+         }
+         .plus-icon {
+         display:block;
+         width: 20px;
+         height: 20px;
+         background-image: url(images/icon_line_plus_16-32-64.svg);
+         padding: 8px;
+         padding-bottom: 7px;
+         cursor: pointer;
+         }
+         .minus-icon {
+         display:block;
+         width: 20px;
+         height: 20px;
+         background-image: url(images/icon_line_minus_24-48-96.svg);
+         padding: 8px;
+         padding-bottom: 7px;
+         cursor: pointer;
+         }
+         .first-child {
+         margin-top: 21px;
+         }
+         .display-none {
+         display: none;
+         }
+         .display-block {
+         display: block;
+         }
+      </style>
+      <dom-if if="{{showPopupBoolean}}" id="createpopup">
+      <template>
+            <div class="popup-container" id="createpopup-container" draggable="true">
+                <!--div class="popup-content" !-->
+                <div class="cell large-10 callout secondary"  id="createpopup-container">
+                <span class="close" on-click="_closeBox">&times;</span>
+                <h3>{{popupConfig.heading}}</h3>
+                <!--div class="popup-header">
+                    <h2 class="popup-header-title"></h2>
+                    <span class="close" on-click="_closeBox">&times;</span>
+                    </div!-->
+                <div class="popup-body">
+                    <dom-if if="{{!_isConfigReadyAsBool}}" id="ready-loading">
+                        <template >
+                            Loading..
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{_isCreated}}">
+                        <template>
+                            <div class="alert-box success">   {{popupConfig.message.success}}. <br/> User is id {{savedForm.id}}</div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{_isError}}">
+                        <template>
+                            <div class="alert-box warning">   {{popupConfig.message.warning}}</div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{_isSaving}}">
+                        <template>
+                            Please wait.. saving..
+                        </template>
+                    </dom-if>
+                    <form name="create-profilex-form" id="create-popup-form">
+                        <dom-repeat items="{{popupConfig.fields}}" index-as="fieldIndex">
+                            <template>
+                                <dom-if if="{{checkFieldType(item.type, 'image', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="profilex-image mini">
+                                            <img id="profilex-image-preview"/>
+                                            <span class="edit-icon" on-click="_openFileBrowse" title$="{{item.label}}" ></span>
+                                            <input type="file" name="file" id="profilex-image-file" on-change="_showPreview"/>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'text', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <dom-repeat items="{{item.values}}" as="itemValue" index-as="itemIndex">
+                                                <template>
+                                                    <div class="cell large-10">
+                                                        <dom-if if="{{!_hasMoreField(itemIndex)}}">
+                                                            <template>
+                                                                <label>{{item.label}}: </label>
+                                                            </template>
+                                                        </dom-if>
+                                                        <input type="text" value="{{itemValue.value::change}}" name$="{{_getItemName(item.name, itemIndex)}}" required="{{item.required}}">
+                                                        <small class$="{{_addDisplayClassName('form-error', itemValue.error)}}">{{item.errorMessage}}</small>
+                                                    </div>
+                                                    <dom-if if="{{item.multiple}}">
+                                                        <template>
+                                                            <div class="cell large-1">
+                                                                <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
+                                                            </div>
+                                                        </template>
+                                                    </dom-if>
+                                                    <dom-if if="{{_hasMoreField(itemIndex)}}">
+                                                        <template>
+                                                            <div class="cell large-1">
+                                                                <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
+                                                            </div>
+                                                        </template>
+                                                    </dom-if>
+                                                </template>
+                                            </dom-repeat>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'groupFields', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <dom-repeat items="{{item.values}}" as="itemValue" index-as="itemIndex">
+                                                <template>
+                                                    <dom-if if="{{!_hasMoreField(itemIndex)}}">
+                                                        <template>
+                                                            <div class="cell large-10">
+                                                                <label>{{item.label}}: </label><br/>
+                                                            </div>
+                                                        </template>
+                                                    </dom-if>
+                                                    <dom-repeat items="{{item.groupFields}}" as="groupItem" index-as="groupIndex">
+                                                        <template>
+                                                            <div class$="{{_getGroupFieldClass('cell large-', groupItem.cellSpace)}}">
+                                                                <dom-if if="{{checkFieldType(groupItem.type, 'dropdown')}}">
+                                                                    <template>
+                                                                        <select name$="{{_getGroupItemName(item.name, itemIndex, groupItem.name)}}" value="{{groupItem.value::change}}">
+                                                                            <template is="dom-repeat" items="{{groupItem.options}}" as="groupItemOption">
+                                                                                <option value="{{groupItemOption.value}}">{{groupItemOption.name}}</option>
+                                                                            </template>
+                                                                        </select>
+                                                                    </template>
+                                                                </dom-if>
+                                                                <dom-if if="{{checkFieldType(groupItem.type, 'text')}}">
+                                                                    <template>
+                                                                        <input type="text" value="{{groupItem.value::change}}" placeholder="{{groupItem.label}}" name$="{{_getGroupItemName(item.name, itemIndex, groupItem.name)}}" required="{{groupItem.required}}">
+                                                                        <small class$="{{_addDisplayClassName('form-error', groupItem.error)}}">{{item.errorMessage}}</small>
+                                                                    </template>
+                                                                </dom-if>
+                                                                <dom-if if="{{checkFieldType(groupItem.type, 'checkbox')}}">
+                                                                    <template>
+                                                                        <div class="custom-checkbox">
+                                                                            <input type="checkbox" value="{{groupItem.value::change}}" name$="{{_getGroupItemName(item.name, itemIndex, groupItem.name)}}" on-change="_setCheckboxValue"/>
+                                                                            <label></label>
+                                                                        </div>
+                                                                        ({{groupItem.label}})
+                                                                    </template>
+                                                                </dom-if>
+                                                            </div>
+                                                        </template>
+                                                    </dom-repeat>
 
-                    </template>
-                    <template is="dom-if" if="{{!item.multiple}}">
-                                <div class="cell large-10">
-                                    <label>{{item.label}}: </label><input type="text" value="{{item.value::change}}" name="{{item.name}}" required="{{item.required}}">
-                                    <small class$="{{_addDisplayClassName('form-error', item.error)}}">{{item.errorMessage}}</small>
-                                </div>
+                                                    <dom-if if="{{item.multiple}}">
+                                                        <template>
+                                                            <div class="cell large-1">
+                                                                <i class$="{{_addIconClassName('plus-icon', itemIndex)}}" on-click="_addMoreField"></i>
+                                                            </div>
+                                                        </template>
+                                                    </dom-if>
+                                                    <dom-if if="{{_hasMoreField(itemIndex)}}">
+                                                        <template>
+                                                            <div class="cell large-1">
+                                                                <i class$="{{_addIconClassName('minus-icon', itemIndex)}}"  on-click="_removeField"></i>
+                                                            </div>
+                                                        </template>
+                                                    </dom-if>
+                                                </template>
+                                            </dom-repeat>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'radio', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <div class="cell large-10">
+                                                <label>{{item.label}}: </label>
+                                                <dom-repeat items="{{item.options}}" as="option">
+                                                    <template>
+                                                        <input type="radio" name="{{item.name}}" value="{{option.value}}"> {{option.value}}
+                                                    </template>
+                                                </dom-repeat>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'date', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <div class="cell large-10">
+                                                <label>{{item.label}}: </label><input type="date" value="" name="{{item.name}}">
+                                            </div>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'checkbox', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <div class="cell large-10">
+                                                <label>{{item.label}}: </label>
+                                                <div class="custom-checkbox">
+                                                    <input type="checkbox" value="" name="{{item.name}}">
+                                                    <label></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{checkFieldType(item.type, 'dropdown', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <div class="cell large-10">
+                                                <label>{{item.label}}: </label>
+                                                <select name="{{item.name}}">
+                                                    <dom-repeat items="{{item.options}}" as="option">
+                                                        <template>
+                                                            <option value="{{option.value}}">{{option.name}}</option>
+                                                        </template>
+                                                    </dom-repeat>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </dom-if>
+                                <dom-if  if="{{checkFieldType(item.type, 'toggle', item.showFieldOn)}}">
+                                    <template>
+                                        <div class="grid-x">
+                                            <div class="large-12 columns morelink">
+                                                <a id="{{field.id}}" on-click="_toggle"> {{item.label}}</a><br/>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </dom-if>
                             </template>
+                        </dom-repeat>
+                    </form>
+                </div>
+                    <div class="popup-footer">
+                        <button class="button button-primary" on-click="_closeBox">{{popupConfig.button.cancel}}</button>
+                        <button class="button button-primary" on-click="_submitBox">{{popupConfig.button.add}}</button>
                     </div>
+                </div>
+            <!--/div!-->
+            </div>
         </template>
-        <template is="dom-if" if="{{checkFieldType(item.type, 'radio', item.showFieldOn)}}">
-                     <div class="grid-x">
-                        <div class="cell large-10">
-                           <label>{{item.label}}: </label>
-                           <template is="dom-repeat" items="{{item.options}}" as="option">
-                              <input type="radio" name="{{item.name}}" value="{{option.value}}"> {{option.value}}
-                           </template>
-        </div>
-        </div>
-        </template>
-        <template is="dom-if" if="{{checkFieldType(item.type, 'date', item.showFieldOn)}}">
-                     <div class="grid-x">
-                        <div class="cell large-10">
-                           <label>{{item.label}}: </label><input type="date" value="" name="{{item.name}}">
-                        </div>
-                     </div>
-                  </template>
-        <template is="dom-if" if="{{checkFieldType(item.type, 'dropdown', item.showFieldOn)}}">
-                     <div class="grid-x">
-                        <div class="cell large-10">
-                           <label>{{item.label}}: </label>
-                           <select name="{{item.name}}">
-                              <template is="dom-repeat" items="{{item.options}}" as="option">
-                                 <option value="{{option.value}}">{{option.name}}</option>
-                              </template>
-        </select>
-        </div>
-        </div>
-        </template>
-        <template is="dom-if" if="{{checkFieldType(item.type, 'toggle', item.showFieldOn)}}">
-                     <div class="grid-x">
-                        <div class="large-12 columns morelink">
-                           <a id="{{field.id}}" on-click="_toggle"> {{item.label}}</a><br/>
-                        </div>
-                     </div>
-                  </template>
-
-        </template>
-    </form>
-    </div>
-    <div class="popup-footer">
-        <button class="button button-primary" on-click="_closeBox">{{popupConfig.button.cancel}}</button>
-        <button class="button button-primary" on-click="_submitBox">{{popupConfig.button.add}}</button>
-    </div>
-    </div>
-    <!--/div!-->
-    </div>
+    </dom-if>
     </template>
-    </template>
-
     <script>
         /**
          * @customElement
@@ -303,7 +392,7 @@
                         type: Boolean,
                         value: false
                     },
-                    _isSaving : {
+                    _isSaving: {
                         type: Boolean,
                         value: false
                     }
@@ -317,18 +406,26 @@
                 }
             }
             _closeBox() {
-                this.popupConfig.fields.forEach(function(field){
+                this.popupConfig.fields.forEach(function(field) {
                     field.value = null;
                     field.error = false;
-                    if( field.multiple ) {
-                        field.values = [''];
-                    }
+                    field.values = [{"value": "", "error":false}];
                 });
                 var otherProperties = [];
-                otherProperties.push({'name': '_isError', value: false});
-                otherProperties.push({'name': '_isCreated', value: false});
+                otherProperties.push({
+                    'name': '_isError',
+                    value: false
+                });
+                otherProperties.push({
+                    'name': '_isCreated',
+                    value: false
+                });
+                otherProperties.push({
+                    'name': '_isSaving',
+                    value: false
+                });
                 this._reRenderPopup(this.popupConfig, otherProperties);
-                window.setTimeout(function(){
+                window.setTimeout(function() {
                     //just wait for 1 sec
                 }.bind(this), 1000);
                 this.showPopupBoolean = false;
@@ -349,24 +446,50 @@
 
                 while (n = it.next()) {
                     if (!n || n.done) break;
+                    console.log(n.value);
                     convertedJSON[n.value[0]] = n.value[1];
                 }
 
                 var formObjectData = {};
                 var formHasError = false;
 
-                this.popupConfig.fields.forEach(function(field) {
-                    if( field.type != 'image') {
-                        formObjectData[field.name] = field.value || field.values.join('').split('');
-                        if (field.required && !field.value) {
-                            field.error = true;
-                            formHasError = true;
+                this.popupConfig.fields.forEach(function(field, index) {
+                    if (field.type != 'image') {
+                        var values = [];
+                        field.values = field.values || [];
+
+                        console.log(field.type, field.values);
+                        field.values.forEach(function(item){
+                            values.push(item.value);
+                            if(field.required && !item.value) {
+                                item.error = true;
+                                formHasError = true;
+                            }
+                        });
+                        if( field.multiple ) {
+                            //formObjectData[field.name] = values && values.join('').split('');
+                            // add new fields to our data object
+                            var multipleFields = Object.keys(convertedJSON).filter(function(key){
+                                return (key.indexOf(field.name) === 0);
+                            });
+
+                            for (var i = 0; i < multipleFields.length; ++i)
+                            {
+                              var expression = /([^\]\[]+)/g;
+                              var currentFieldNames = [];
+                              var currentFieldKey = null;
+                              while((currentFieldKey = expression.exec(multipleFields[i]))) {
+                                currentFieldNames.push(currentFieldKey[0]);
+                              }
+                              this._convertFormNamesToJSON(formObjectData, currentFieldNames, convertedJSON[multipleFields[i]]);
+                            }
+                        } else {
+                          formObjectData[field.name] = values[0];
                         }
+
                     }
-                });
-
-                convertedJSON = formObjectData;
-
+                }.bind(this));
+                console.log(formObjectData, convertedJSON);
                 if (formHasError) {
                     this._reRenderPopup(this.popupConfig);
                 } else {
@@ -374,7 +497,7 @@
                     var xhr = this._generateXHRObject('POST', this.apiUrl);
 
                     if (this.sendAsJson == 'true') {
-                        xhr.send(JSON.stringify(convertedJSON));
+                        xhr.send(JSON.stringify(formObjectData));
                     } else {
                         xhr.send(formData);
                     }
@@ -382,10 +505,10 @@
             }
             _generateXHRObject(method, url) {
                 var xhr = new XMLHttpRequest();
-                
+
                 xhr.onreadystatechange = this._xhrHandler.bind(this);
 
-                xhr.open( method, url);
+                xhr.open(method, url);
                 xhr.setRequestHeader('Accept', 'application/json');
                 if (this.xApikey) {
                     xhr.setRequestHeader('x-apikey', this.xApikey);
@@ -399,30 +522,49 @@
             }
             _xhrHandler(e) {
                 if (e.target.readyState === 4) {
-                    this._isSaving = false; 
                     var photo = this.shadowRoot.getElementById('profilex-image-file');
                     var file = photo.files[0];
                     this.popupConfig.fields.forEach(function(field) {
                         field.error = false;
                     });
                     this._reRenderPopup(this.popupConfig);
-                    if (e.target.status === 201 || e.target.status === 200 ) {
+                    if (e.target.status === 201 || e.target.status === 200) {
                         this._isCreated = true;
                         this.savedForm = JSON.parse(e.target.response);
-                        if(this.savedForm.id) {
+                        console.log(this.savedForm, e.target);
+                        if (this.savedForm.id) {
                             var data = new FormData();
-                            if(file && file.size > 0 ) {
+                            if (file && file.size > 0) {
                                 data.append('file', file, file.name);
-                                var xhr = new XMLHttpRequest();             
+                                var xhr = new XMLHttpRequest();
                                 xhr.onreadystatechange = this._xhrHandler.bind(this);
-                                xhr.open('PUT', this.apiUrl + '/'+ this.savedForm.id + '/image');
+                                xhr.open('PUT', this.apiUrl + '/' + this.savedForm.id + '/image');
                                 if (this.xApikey) {
                                     xhr.setRequestHeader('x-apikey', this.xApikey);
                                 } else if (this.accessToken) {
                                     xhr.setRequestHeader("Authorization", "Bearer " + this.accessToken)
                                 }
                                 xhr.send(data);
+                            } else {
+                                document.querySelector('trmb-event-listener').dispatchEvent(new CustomEvent('kick', {
+                                    detail: {
+                                        kicked: true
+                                    }
+                                }));
+
+                                console.log("kicking off event");
+                                //When only profile response
+                                this._isSaving = false;
                             }
+                        } else {
+                            document.querySelector('trmb-event-listener').dispatchEvent(new CustomEvent('kick', {
+                                detail: {
+                                    kicked: true
+                                }
+                            }));
+                            console.log("kicking off event");
+                            //When both image and profile response got.
+                            this._isSaving = false;
                         }
                     } else {
                         this._isError = true;
@@ -457,6 +599,10 @@
                         if (field.type == "toggle") {
                             this[field.modelKey] = field.value;
                             field.label = (field.value) ? field.labelOn : field.labelOff;
+                            field.multiple = field.multiple || false;
+                        }
+                        if(field.type == 'groupFields') {
+                          field.values[0].value =  field.groupValues;
                         }
                     }.bind(this));
                     this.popupConfig = layoutSchema;
@@ -470,6 +616,7 @@
                 }
             }
             checkFieldType(fieldType, value, showFieldOn) {
+                showFieldOn = showFieldOn || false;
                 return (fieldType == value && (!showFieldOn || this[showFieldOn]));
             }
             _toggle(e) {
@@ -491,7 +638,7 @@
                 xobj.open('GET', fileName, true);
                 xobj.onreadystatechange = function() {
                     if (xobj.readyState === 4 && xobj.status === 200) {
-                        // Required use of an anonymous callback 
+                        // Required use of an anonymous callback
                         // as .open() will NOT return a value but simply returns undefined in asynchronous mode
                         callback(xobj.responseText);
                     }
@@ -504,7 +651,11 @@
                     return field.name == fieldName;
                 });
                 var tmp = this.popupConfig;
-                tmp.fields[fieldIndex].values.push("");
+                if( tmp.fields[fieldIndex].type == "groupFields" ) {
+                  tmp.fields[fieldIndex].values.push({ "value": tmp.fields[fieldIndex].groupValues, "error": "" });
+                } else {
+                  tmp.fields[fieldIndex].values.push({ "value": "", "error": "" });
+                }
                 this._reRenderPopup(tmp);
             }
             _hasMoreField(index) {
@@ -528,14 +679,22 @@
             }
             _getItemName(itemName, index) {
                 return itemName + "[" + index + "]";
-
+            }
+            _getGroupFieldClass(currentClass, postFix) {
+                return currentClass + postFix;
+            }
+            _getGroupItemName(itemName, index, groupName) {
+                return itemName + "[" + index + "][" + groupName +"]";
+            }
+            _setCheckboxValue(e) {
+              e.target.setAttribute("value", e.target.checked);
             }
             _reRenderPopup(updatePopupConfig, otherProperties) {
                 otherProperties = otherProperties || [];
                 this.set('popupConfig', []);
                 this.$.createpopup.render();
                 this.set('popupConfig', updatePopupConfig);
-                otherProperties.forEach(function(property){
+                otherProperties.forEach(function(property) {
                     this.set(property.name, property.value);
                 }.bind(this));
                 this.$.createpopup.render();
@@ -555,6 +714,24 @@
                 };
 
                 reader.readAsDataURL(file);
+            }
+           _convertFormNamesToJSON(target, properties, value)
+            {
+                var currentTarget = target;
+                var propertiesNum = properties.length;
+                var lastIndex = propertiesNum - 1;
+
+                for (var i = 0; i < propertiesNum; ++i)
+                {
+                    var currentProperty = properties[i];
+
+                    if (currentTarget[currentProperty] === undefined)
+                    {
+                        currentTarget[currentProperty] = (i === lastIndex) ? value : {};
+                    }
+
+                    currentTarget = currentTarget[currentProperty];
+                }
             }
         }
 
