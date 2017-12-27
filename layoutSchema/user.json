@@ -10,7 +10,7 @@
             "error": false
         },
         {
-            "name": "first_name",
+            "name": "firstName",
             "label": "First Name",
             "type": "text",
             "values": [{ "value": "", "error": "" }],
@@ -18,7 +18,7 @@
             "errorMessage": "Please enter the first name"
         },
         {
-            "name": "last_name",
+            "name": "lastName",
             "label": "Last Name",
             "type": "text",
             "values": [{ "value": "", "error": "" }],

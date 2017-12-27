@@ -481,6 +481,7 @@
                               while((currentFieldKey = expression.exec(multipleFields[i]))) {
                                 currentFieldNames.push(currentFieldKey[0]);
                               }
+                              console.log(currentFieldNames, convertedJSON[multipleFields[i]]);
                               this._convertFormNamesToJSON(formObjectData, currentFieldNames, convertedJSON[multipleFields[i]]);
                             }
                         } else {
@@ -727,7 +728,8 @@
 
                     if (currentTarget[currentProperty] === undefined)
                     {
-                        currentTarget[currentProperty] = (i === lastIndex) ? value : {};
+                        console.log(currentProperty, i+1, properties, i, parseInt(properties[i+1]));
+                        currentTarget[currentProperty] = (i === lastIndex) ? value : ((parseInt(properties[i+1]) > -1) ? [] : {});
                     }
 
                     currentTarget = currentTarget[currentProperty];
